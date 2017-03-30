@@ -1,3 +1,4 @@
+global.Symbol = () => ({})
 const dd = require('../dotdom');
 
 describe('.dom', function () {
@@ -9,25 +10,25 @@ describe('.dom', function () {
       it('should create vnode without arguments', function () {
         const vdom = dd.H('div');
 
-        expect(vdom.E).toEqual('div');
-        expect(vdom.P).toEqual({C: []});
+        expect(vdom.$).toEqual('div');
+        expect(vdom.a).toEqual({c: []});
       });
 
       it('should create vnode with props', function () {
         const vdom = dd.H('div', {foo: 'bar'});
 
-        expect(vdom.E).toEqual('div');
-        expect(vdom.P).toEqual({foo: 'bar', C: []});
+        expect(vdom.$).toEqual('div');
+        expect(vdom.a).toEqual({foo: 'bar', c: []});
       });
 
       it('should create vnode with props and children', function () {
         const cdom = dd.H('div');
         const vdom = dd.H('div', {foo: 'bar'}, cdom);
 
-        expect(vdom.E).toEqual('div');
-        expect(vdom.P).toEqual({
+        expect(vdom.$).toEqual('div');
+        expect(vdom.a).toEqual({
           foo: 'bar',
-          C: [ cdom ]
+          c: [ cdom ]
         });
       });
 
@@ -37,10 +38,10 @@ describe('.dom', function () {
         const cdom3 = dd.H('div');
         const vdom = dd.H('div', {foo: 'bar'}, cdom1, [cdom2, cdom3]);
 
-        expect(vdom.E).toEqual('div');
-        expect(vdom.P).toEqual({
+        expect(vdom.$).toEqual('div');
+        expect(vdom.a).toEqual({
           foo: 'bar',
-          C: [ cdom1, cdom2, cdom3 ]
+          c: [ cdom1, cdom2, cdom3 ]
         });
       });
 
@@ -48,47 +49,47 @@ describe('.dom', function () {
         const cdom = dd.H('div');
         const vdom = dd.H('div', {foo: 'bar'}, 'foo', cdom);
 
-        expect(vdom.E).toEqual('div');
-        expect(vdom.P).toEqual({
+        expect(vdom.$).toEqual('div');
+        expect(vdom.a).toEqual({
           foo: 'bar',
-          C: [ 'foo', cdom ]
+          c: [ 'foo', cdom ]
         });
       });
 
       it('should create vnode with props and string children', function () {
         const vdom = dd.H('div', {foo: 'bar'}, 'foo');
 
-        expect(vdom.E).toEqual('div');
-        expect(vdom.P).toEqual({
+        expect(vdom.$).toEqual('div');
+        expect(vdom.a).toEqual({
           foo: 'bar',
-          C: [ 'foo' ]
+          c: [ 'foo' ]
         });
       });
 
       it('should create vnode with only child', function () {
         const vdom = dd.H('div', 'foo');
 
-        expect(vdom.E).toEqual('div');
-        expect(vdom.P).toEqual({
-          C: [ 'foo' ]
+        expect(vdom.$).toEqual('div');
+        expect(vdom.a).toEqual({
+          c: [ 'foo' ]
         });
       });
 
       it('should create vnode with children', function () {
         const vdom = dd.H('div', 'foo', 'bar', 'baz');
 
-        expect(vdom.E).toEqual('div');
-        expect(vdom.P).toEqual({
-          C: [ 'foo', 'bar', 'baz' ]
+        expect(vdom.$).toEqual('div');
+        expect(vdom.a).toEqual({
+          c: [ 'foo', 'bar', 'baz' ]
         });
       });
 
       it('should create vnode with children in arrays', function () {
         const vdom = dd.H('div', 'foo', ['bar', 'baz']);
 
-        expect(vdom.E).toEqual('div');
-        expect(vdom.P).toEqual({
-          C: [ 'foo', 'bar', 'baz' ]
+        expect(vdom.$).toEqual('div');
+        expect(vdom.a).toEqual({
+          c: [ 'foo', 'bar', 'baz' ]
         });
       });
 
@@ -96,9 +97,9 @@ describe('.dom', function () {
         const cdom = dd.H('div');
         const vdom = dd.H('div', cdom, 'foo');
 
-        expect(vdom.E).toEqual('div');
-        expect(vdom.P).toEqual({
-          C: [ cdom, 'foo' ]
+        expect(vdom.$).toEqual('div');
+        expect(vdom.a).toEqual({
+          c: [ cdom, 'foo' ]
         });
       });
 
@@ -110,9 +111,9 @@ describe('.dom', function () {
         const cdom = dd.H('div');
         const vdom = dd.H.apply({}, ['div', cdom, 'foo']);
 
-        expect(vdom.E).toEqual('div');
-        expect(vdom.P).toEqual({
-          C: [ cdom, 'foo' ]
+        expect(vdom.$).toEqual('div');
+        expect(vdom.a).toEqual({
+          c: [ cdom, 'foo' ]
         });
       });
 
@@ -120,19 +121,19 @@ describe('.dom', function () {
         const cdom = dd.H('div');
         const vdom = dd.H.call({}, 'div', cdom, 'foo');
 
-        expect(vdom.E).toEqual('div');
-        expect(vdom.P).toEqual({
-          C: [ cdom, 'foo' ]
+        expect(vdom.$).toEqual('div');
+        expect(vdom.a).toEqual({
+          c: [ cdom, 'foo' ]
         });
       });
 
-      it('H.tag should be a shorthand', function () {
+      it('H.<tag> should be a shorthand', function () {
         const cdom = dd.H('div');
         const vdom = dd.H.div(cdom, 'foo');
 
-        expect(vdom.E).toEqual('div');
-        expect(vdom.P).toEqual({
-          C: [ cdom, 'foo' ]
+        expect(vdom.$).toEqual('div');
+        expect(vdom.a).toEqual({
+          c: [ cdom, 'foo' ]
         });
       });
 
@@ -251,6 +252,271 @@ describe('.dom', function () {
         );
       });
 
+    });
+
+    describe('Lifecycle Methods', function () {
+
+      it('should correctly call .m when mounted', function () {
+        const dom = document.createElement('div');
+        const updateHandler = jest.fn();
+        const SampleComponent = (props, state, setState, hooks) => {
+          hooks.m.push(updateHandler);
+          return dd.H(props.tag);
+        };
+
+        const vdom1 = dd.H(SampleComponent, {tag: 'div'});
+        dd.R(vdom1, dom)
+
+        const dom1 = dom.firstChild;
+
+        expect(updateHandler.mock.calls.length).toEqual(1)
+        expect(updateHandler.mock.calls).toEqual([
+          [dom1, undefined]
+        ])
+      });
+
+      it('should correctly call .d when DOM element tag changed', function () {
+        const dom = document.createElement('div');
+        const updateHandler = jest.fn();
+        const SampleComponent = (props, state, setState, hooks) => {
+          hooks.d.push(updateHandler);
+          return dd.H(props.tag);
+        };
+
+        const vdom1 = dd.H(SampleComponent, {tag: 'div'});
+        dd.R(vdom1, dom)
+
+        const dom1 = dom.firstChild;
+
+        const vdom2 = dd.H(SampleComponent, {tag: 'span'});
+        dd.R(vdom2, dom)
+
+        const dom2 = dom.firstChild;
+
+        expect(updateHandler.mock.calls.length).toEqual(1)
+        expect(updateHandler.mock.calls).toEqual([
+          [dom2, dom1]
+        ])
+      });
+
+      it('should correctly call .d when props change', function () {
+        const dom = document.createElement('div');
+        const updateHandler = jest.fn();
+        const SampleComponent = (props, state, setState, hooks) => {
+          hooks.d.push(updateHandler);
+          return dd.H('div', {className: props.className});
+        };
+
+        const vdom1 = dd.H(SampleComponent, {className: 'foo'});
+        dd.R(vdom1, dom)
+
+        const dom1 = dom.firstChild;
+
+        const vdom2 = dd.H(SampleComponent, {className: 'bar'});
+        dd.R(vdom2, dom)
+
+        const dom2 = dom.firstChild;
+
+        expect(updateHandler.mock.calls.length).toEqual(1)
+        expect(updateHandler.mock.calls).toEqual([
+          [dom1, dom1]
+        ])
+      });
+
+      it('should correctly call .u when replaced with plain tag', function () {
+        const dom = document.createElement('div');
+        const updateHandler = jest.fn();
+        const SampleComponent = (props, state, setState, hooks) => {
+          hooks.u.push(updateHandler); //updateHandler
+          return dd.H(props.tag);
+        };
+
+        const vdom1 = dd.H(SampleComponent, {tag: 'div'});
+        dd.R(vdom1, dom)
+
+        const dom1 = dom.firstChild;
+
+        const vdom2 = dd.H('span');
+        dd.R(vdom2, dom)
+
+        expect(updateHandler.mock.calls.length).toEqual(1)
+        expect(updateHandler.mock.calls).toEqual([
+          [undefined,undefined]
+        ])
+      });
+
+      it('should correctly call .u when replaced with component', function () {
+        const dom = document.createElement('div');
+        const updateHandler = jest.fn();
+        const ComponentA = (props, state, setState, hooks) => {
+          hooks.u.push(updateHandler);
+          return dd.H(props.tag);
+        };
+        const ComponentB = (props, state, setState, hooks) => {
+          return dd.H(props.tag);
+        };
+
+        const vdom1 = dd.H(ComponentA, {tag: 'div'});
+        dd.R(vdom1, dom)
+
+        const dom1 = dom.firstChild;
+
+        const vdom2 = dd.H(ComponentB, {tag: 'div'});
+        dd.R(vdom2, dom)
+
+        expect(updateHandler.mock.calls.length).toEqual(1)
+        expect(updateHandler.mock.calls).toEqual([
+          [undefined,undefined]
+        ])
+      });
+
+      it('should correctly call .m on the component replaced with', function () {
+        const dom = document.createElement('div');
+        const mountHandler = jest.fn();
+        const ComponentA = (props, state, setState, hooks) => {
+          return dd.H(props.tag);
+        };
+        const ComponentB = (props, state, setState, hooks) => {
+          hooks.m.push(mountHandler);
+          return dd.H(props.tag);
+        };
+
+        const vdom1 = dd.H(ComponentA, {tag: 'div'});
+        dd.R(vdom1, dom)
+
+        const dom1 = dom.firstChild;
+
+        const vdom2 = dd.H(ComponentB, {tag: 'div'});
+        dd.R(vdom2, dom)
+
+        const dom2 = dom.firstChild;
+
+        expect(vdom1).not.toBe(vdom2);
+        expect(mountHandler.mock.calls.length).toEqual(1)
+        expect(mountHandler.mock.calls).toEqual([
+          [dom2, dom1]
+        ])
+      });
+
+      it('should correctly call .u when removed', function () {
+        const dom = document.createElement('div');
+        const updateHandler = jest.fn();
+        const SampleComponent = (props, state, setState, hooks) => {
+          hooks.u.push(updateHandler);
+          return dd.H(props.tag);
+        };
+
+        const vdom1 = dd.H(SampleComponent, {tag: 'div'});
+        dd.R(vdom1, dom)
+
+        const dom1 = dom.firstChild;
+
+        dd.R([], dom)
+
+        expect(updateHandler.mock.calls.length).toEqual(1)
+        expect(updateHandler.mock.calls).toEqual([
+          [undefined,undefined]
+        ])
+      });
+
+      it('should correctly call .u when removed as a deep child', function () {
+        const dom = document.createElement('div');
+        const updateHandler = jest.fn();
+        const SampleComponent = (props, state, setState, hooks) => {
+          hooks.u.push(updateHandler);
+          return dd.H(props.tag);
+        };
+
+        const vdom1 = dd.H('div',
+          dd.H('div',
+            dd.H(SampleComponent, {tag: 'div'})
+          )
+        );
+        dd.R(vdom1, dom)
+
+        const dom1 = dom.firstChild;
+
+        dd.R([], dom)
+
+        expect(updateHandler.mock.calls.length).toEqual(1)
+        expect(updateHandler.mock.calls).toEqual([
+          [undefined,undefined]
+        ])
+      });
+
+      it('should correctly call .u when removed as a deep child because of root replacement', function () {
+        const dom = document.createElement('div');
+        const updateHandler = jest.fn();
+        const SampleComponent = (props, state, setState, hooks) => {
+          hooks.u.push(updateHandler);
+          return dd.H(props.tag);
+        };
+        const ComponentA = (props, state, setState, hooks) => {
+          return dd.H('div', props.c);
+        };
+        const ComponentB = (props, state, setState, hooks) => {
+          return dd.H('div', props.c);
+        };
+
+        const vdom1 = dd.H('div',
+          dd.H(ComponentA,
+            dd.H(SampleComponent, {tag: 'div'})
+          )
+        );
+        dd.R(vdom1, dom)
+
+        const dom1 = dom.firstChild;
+
+        const vdom2 = dd.H('div',
+          dd.H(ComponentB)
+        );
+
+        dd.R([], dom)
+
+        expect(updateHandler.mock.calls.length).toEqual(1)
+        expect(updateHandler.mock.calls).toEqual([
+          [undefined,undefined]
+        ])
+      });
+
+      it('should correctly call .m, .d, .u in a mount, update, unmount cycle', function () {
+        const dom = document.createElement('div');
+        const mHandler = jest.fn();
+        const dHandler = jest.fn();
+        const uHandler = jest.fn();
+
+        const SampleComponent = (props, state, setState, hooks) => {
+          hooks.m.push(mHandler);
+          hooks.d.push(dHandler);
+          hooks.u.push(uHandler);
+          return dd.H('div', {className: props.className});
+        };
+
+        const vdom1 = dd.H(SampleComponent, {className: 'foo'});
+        dd.R(vdom1, dom)
+
+        expect(mHandler.mock.calls.length).toEqual(1)
+        expect(dHandler.mock.calls.length).toEqual(0)
+        expect(uHandler.mock.calls.length).toEqual(0)
+
+        const dom1 = dom.firstChild;
+
+        const vdom2 = dd.H(SampleComponent, {className: 'bar'});
+        dd.R(vdom2, dom)
+
+        expect(mHandler.mock.calls.length).toEqual(1)
+        expect(dHandler.mock.calls.length).toEqual(1)
+        expect(uHandler.mock.calls.length).toEqual(0)
+
+        const dom2 = dom.firstChild;
+
+        dd.R([], dom)
+
+        expect(mHandler.mock.calls.length).toEqual(1)
+        expect(dHandler.mock.calls.length).toEqual(1)
+        expect(uHandler.mock.calls.length).toEqual(1)
+
+      });
     });
 
     describe('Reconciliation', function () {
